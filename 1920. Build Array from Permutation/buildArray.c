@@ -29,7 +29,7 @@ int* buildArray(int* nums, int numsSize, int* returnSize){
 int main(){
     printf("Hello World!");
     int numsSize = 0;
-    int nums[] = {};
+    int nums[] = {1};
     int returnSize;
     
     int* out = buildArray(nums, numsSize, &returnSize);
