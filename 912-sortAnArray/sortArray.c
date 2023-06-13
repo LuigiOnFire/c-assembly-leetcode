@@ -21,9 +21,9 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "add rdx, rdi\n"
             "shr rdx, 1\n" // rdx contains m = (l + r) / 2
 
-            "push rdi\n"
-            "push rdx\n"
-            "push rsi\n"
+            "push rdi\n" // this one is not used 
+            "push rdx\n" // this will be the new r
+            "push rsi\n" // this will be the new l
             "call merge_sort\n"
             "pop rsi\n"
             "pop rdx\n"
@@ -31,9 +31,9 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             "inc rdx\n" //m = m + 1
 
-            "push rsi\n"
-            "push rdi\n"
-            "push rdx\n"
+            "push rsi\n" // this one is not used 
+            "push rdi\n" // this will be the new r
+            "push rdx\n" // this will be the new l
             "call merge_sort\n"
             "pop rdx\n"
             "pop rdi\n"
@@ -50,6 +50,14 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "ret\n"
 
             "merge:\n"
+            
+            "pop rsi\n" // new l
+            "pop rdi\n" // new r
+            "mov rdx, rsx\n"
+            "add rdx, rdi\n"
+            "div rdx, 2\n" // new m
+
+            "cmp \n"
 
             "ret\n"
             "init:\n"
@@ -71,7 +79,6 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             "pop rsi\n"
             "pop rdi\n"
-
             
             ".att_syntax\n"
             : "+r" (out)
