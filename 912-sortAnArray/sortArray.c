@@ -50,20 +50,75 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "ret\n"
 
             "merge:\n"
+
+            "push rbp\n"
+            "mov rbp, rsp\n"
             
             "pop rsi\n" // new l
             "pop rdi\n" // new r
+            
+            
+            // get new m (maybe done)
             "mov rdx, rsx\n"
             "add rdx, rdi\n"
-            "div rdx, 2\n" // new m
+            "shr rdx, 1\n" // new m
 
-            // new array sizes are r - m and m = l
-            "mov rax, rdi\n"
+            // save stack pointer somewhere for R[]
 
-            // need indices i and j starting at 0
-            // conditions to be i < m - l and j < r - m
+            // move the stack pointer for [m r) subarray
 
-            "cmp \n"
+            // save stack pointer somewhere for L[]
+
+            // move the stack pointer for [l m) subarray
+
+            // copy nums[l r) into what we just allocated NEED TO MOVE nums OUT OF RAX
+
+            // set up i = 0
+
+            // set up j = 0
+
+            "merge_both:\n"
+
+            // if i >= m - l || j >= r - m then jump to fill_l
+            "cmp\n"
+
+            // Do L if L[i] >= R[j] jump to doing R instead
+
+            // nums[l + i + j] = L[i]
+
+            // i++
+
+            // jump back to merge both
+
+            "merge_r:\n"
+
+            // nums[l + i + j] = R[j]
+
+            // j++
+
+            // jump back to merge both
+            
+            "fill_l:\n"
+
+            // if i >= m - l jump to fill r
+
+            // nums[l + i + j] = L[i]
+
+            // jump back to fill_l
+
+            "fill_r:\n"
+
+            // if j >= n - l jump to merge_cleanup
+
+            // nums[l + i + j] = R[j]
+
+            // jump back to fill_r
+
+            "merge_cleanup:\n"
+
+            // restore rbp and rsp
+
+            "pop rbp\n"
 
             "ret\n"
             "init:\n"
