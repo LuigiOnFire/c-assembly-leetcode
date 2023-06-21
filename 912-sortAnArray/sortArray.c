@@ -57,6 +57,12 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "add rdx, rdi\n"
             "div rdx, 2\n" // new m
 
+            // new array sizes are r - m and m = l
+            "mov rax, rdi\n"
+
+            // need indices i and j starting at 0
+            // conditions to be i < m - l and j < r - m
+
             "cmp \n"
 
             "ret\n"
@@ -89,7 +95,6 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 }
 
 int main(){
-    printf("Hello World!");
     int numsSize = 1;
     //int nums[] = {0, 1, 2, 3};
     int nums[] = {0};
