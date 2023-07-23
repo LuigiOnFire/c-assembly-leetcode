@@ -6,6 +6,10 @@
  */
 int* sortArray(int* nums, int numsSize, int* returnSize){
     int* out = malloc(numsSize*sizeof(int));
+
+    // __asm__ volatile(R"(.intel_syntax noprefix
+    //     )"
+
     __asm__ volatile(".intel_syntax noprefix\n"
 
             "jmp init\n"
@@ -62,6 +66,22 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "mov rdx, rsx\n"
             "add rdx, rdi\n"
             "shr rdx, 1\n" // new m
+
+            // save size of L = m - l
+            "xor rbx, rbx\n"
+            "mov rbx, rdx\n"
+            "sub rbx, rsi\n"
+            "push rbx\n"
+
+            // save size of R = r - m
+            "xor rbx, rbx\n"
+            "mov rbx, rdi\n"
+            "sub rbx, rdx\n"
+            "push rbx\n"
+
+            // move each element from A[l..r)
+            ""
+
 
             // save stack pointer somewhere for R[]
 
