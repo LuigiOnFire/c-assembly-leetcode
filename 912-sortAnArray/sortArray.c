@@ -58,12 +58,12 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "push rbp\n"
             "mov rbp, rsp\n"
             
-            "pop rsi\n" // new l
-            "pop rdi\n" // new r
+            "mov rsi, QWORD PTR [rbp + 0x10]\n" // new l
+            "mov rdi, QWORD PTR [rbp + 0x18]\n" // new r
             
             
-            // get new m (maybe done)
-            "mov rdx, rsx\n"
+            // get new m
+            "mov rdx, rsi\n"
             "add rdx, rdi\n"
             "shr rdx, 1\n" // new m
 
@@ -80,31 +80,37 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "push rbx\n"
 
             // move each element from A[l..r)
-            ""
-
-
-            // save stack pointer somewhere for R[]
-
-            // move the stack pointer for [m r) subarray
-
-            // save stack pointer somewhere for L[]
-
-            // move the stack pointer for [l m) subarray
-
-            // copy nums[l r) into what we just allocated NEED TO MOVE nums OUT OF RAX
+            "xor r8, r8\n"
+            "mov r8d, edi\n"
+            "sub r8d, esi\n" // r8 = r - l
+            
+            "xor ecx, ecx\n"
+            "copy_array_start:\n"            
+            "cmp ecx, r8d\n"
+            "jg copy_array_end\n"            
+            "mov ebx, DWORD PTR [%1 + rcx*4]\n"
+            "mov DWORD PTR [%0 + rcx*4], ebx\n"
+            "inc ecx\n"
+            "jmp copy_array_start\n"
+            "copy_array_end:\n"
 
             // set up i = 0
+            "xor rbx, rbx\n"
 
             // set up j = 0
+            "xor rcx, rcx\n"
 
             "merge_both:\n"
 
             // if i >= m - l || j >= r - m then jump to fill_l
-            "cmp\n"
+
+            
+
+            //"cmp\n"
 
             // Do L if L[i] >= R[j] jump to doing R instead
 
-            // nums[l + i + j] = L[i]
+            // nums[l + i + j] = L[l + i]
 
             // i++
 
@@ -112,7 +118,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             "merge_r:\n"
 
-            // nums[l + i + j] = R[j]
+            // nums[l + i + j] = R[l + j]
 
             // j++
 
@@ -138,6 +144,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             // restore rbp and rsp
 
+            "move rsp, rbp\n"
             "pop rbp\n"
 
             "ret\n"
@@ -164,15 +171,15 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             ".att_syntax\n"
             : "+r" (out)
             : "r" (nums), "r" (numsSize), "r" (returnSize)
-            : "rax", "rbx", "rcx", "rdx", "rsi", "rdi");
+            : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8");
 
             return nums;
 }
 
 int main(){
-    int numsSize = 1;
+    int numsSize = 2;
     //int nums[] = {0, 1, 2, 3};
-    int nums[] = {0};
+    int nums[] = {1, 0};
     int returnSize;
     
     int* out = sortArray(nums, numsSize, &returnSize);
