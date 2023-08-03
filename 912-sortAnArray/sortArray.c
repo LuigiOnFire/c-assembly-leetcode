@@ -102,25 +102,64 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             "merge_both:\n"
 
-            // if i >= m - l || j >= r - m then jump to fill_l
+            // if i >= m - l || j >= r - m then jump to fill_l            
 
-            
+            "mov r8, QWORD PTR [rbp]\n" // temporarily holding m - l
+            "cmp rbx, r8\n"
+            "jg fill_l\n"
 
-            //"cmp\n"
+            "mov r8, QWORD PTR [rbp - 8]\n"
+            "cmp rcx, r8\n"
+            "jg fill_l\n"
 
             // Do L if L[i] >= R[j] jump to doing R instead
 
-            // nums[l + i + j] = L[l + i]
+            "mov r8, %0\n"
+            "mov r10, rsi\n"
+            "add r10, rbx\n"
+            "shl r10, 2\n"
+            "add r8, r10\n"
+            "mov r8, QWORD PTR[r8]\n" // L[l + i]
 
-            // i++
+            "mov r9, %0\n"
+            "mov r10, rdx\n"
+            "add r10, rcx\n"
+            "shl r10, 2\n"
+            "add r8, r10\n"
+            "mov r9, QWORD PTR[r9]\n" // R[m + j]
+        
+            "cmp r8, r9\n"
+            "jg merge_r\n"
+
+            // nums[l + i + j] = L[l + i]
+            "mov r9, %0\n"
+            "mov r10, rsi\n"
+            "add r10, rbx\n"
+            "add r10, rcx\n"
+            "shl r10, 2\n"
+            "add r9, r10\n"
+            "mov QWORD PTR[r9], r8\n" // OUT[l + i + j] = L[l + i]            
+
+            // i++            
+            "inc rbx\n"
 
             // jump back to merge both
+            "jmp merge_both"
 
             "merge_r:\n"
 
             // nums[l + i + j] = R[l + j]
 
+            "mov r8, %0\n"
+            "mov r10, rsi\n"
+            "add r10, rbx\n"
+            "add r10, rcx\n"
+            "shl r10, 2\n"
+            "add r8, r10\n"
+            "mov QWORD PTR[r8], r9\n" // OUT[l + i + j] = L[l + i]
+
             // j++
+            "inc rbx\n"
 
             // jump back to merge both
             
@@ -144,7 +183,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             // restore rbp and rsp
 
-            "move rsp, rbp\n"
+            "mov rsp, rbp\n"
             "pop rbp\n"
 
             "ret\n"
@@ -171,7 +210,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             ".att_syntax\n"
             : "+r" (out)
             : "r" (nums), "r" (numsSize), "r" (returnSize)
-            : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8");
+            : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10");
 
             return nums;
 }
