@@ -43,6 +43,8 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "pop rdi\n"
             "pop rsi\n"
 
+            "dec rdx\n" //m = m - 1 (restoring it to previous value)
+
             "push rdi\n"
             "push rsi\n"
             "call merge\n"
@@ -83,16 +85,16 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             // move each element from A[l..r)
             "xor r8, r8\n"
-            "mov r8d, edi\n"
-            "sub r8d, esi\n" // r8 = r - l
+            "mov r8, rdi\n"
+            "sub r8, rsi\n" // r8 = r - l
             
-            "xor ecx, ecx\n"
+            "xor rcx, rcx\n"
             "copy_array_start:\n"            
-            "cmp ecx, r8d\n"
+            "cmp rcx, r8\n"
             "jg copy_array_end\n"            
-            "mov ebx, DWORD PTR [%1 + rcx*4]\n"
-            "mov DWORD PTR [%0 + rcx*4], ebx\n"
-            "inc ecx\n"
+            "mov rbx, QWORD PTR [%1 + rcx*4]\n"
+            "mov QWORD PTR [%0 + rcx*4], rbx\n"
+            "inc rcx\n"
             "jmp copy_array_start\n"
             "copy_array_end:\n"
 
@@ -225,16 +227,16 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "copy_out_to_in:\n"
 
             "xor r8, r8\n"
-            "mov r8d, edi\n"
-            "sub r8d, esi\n" // r8 = r - l
+            "mov r8, rdi\n"
+            "sub r8, rsi\n" // r8 = r - l
             
-            "xor ecx, ecx\n"
+            "xor rcx, rcx\n"
 
             "copy_array_back_start:\n"
-            "cmp ecx, r8d\n"
+            "cmp rcx, r8\n"
             "jg copy_array_back_end\n"            
-            "mov ebx, DWORD PTR [%0 + rcx*4]\n"
-            "mov DWORD PTR [%1 + rcx*4], ebx\n"
+            "mov rbx, QWORD PTR [%0 + rcx*4]\n"
+            "mov QWORD PTR [%1 + rcx*4], rbx\n"
             "inc ecx\n"
             "jmp copy_array_start\n"
             "copy_array_back_end:\n"
@@ -255,9 +257,11 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "xor rsi, rsi\n"
             "xor rdi, rdi\n"
             // rax will remain the start of our array
+
+            "xor rax, rax\n"
             "mov rax, %1\n"
 
-            "mov esi, 0\n"
+            "mov rsi, 0\n"
             "mov edi, %2\n"
             "push rdi\n"
             "push rsi\n"
