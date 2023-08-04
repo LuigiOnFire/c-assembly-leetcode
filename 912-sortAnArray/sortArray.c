@@ -50,6 +50,8 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "pop rdi\n"
             
             "merge_sort_end:" 
+
+            "mov rsp, rbp\n"
             "pop rbp\n"
             "ret\n"
 
