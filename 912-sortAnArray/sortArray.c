@@ -114,14 +114,14 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             // Do L if L[i] >= R[j] jump to doing R instead
 
-            "mov r8, %0\n"
+            "mov r8, %1\n"
             "mov r10, rsi\n"
             "add r10, rbx\n"
             "shl r10, 2\n"
             "add r8, r10\n"
             "mov r8, QWORD PTR[r8]\n" // L[l + i]
 
-            "mov r9, %0\n"
+            "mov r9, %1\n"
             "mov r10, rdx\n"
             "add r10, rcx\n"
             "shl r10, 2\n"
@@ -144,11 +144,68 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "inc rbx\n"
 
             // jump back to merge both
-            "jmp merge_both"
+            "jmp merge_both\n"
 
             "merge_r:\n"
 
-            // nums[l + i + j] = R[l + j]
+            // nums[l + i + j] = R[m + j]            
+            "mov r8, %0\n"
+            "mov r10, rsi\n"
+            "add r10, rbx\n"
+            "add r10, rcx\n"
+            "shl r10, 2\n"
+            "add r8, r10\n"
+            "mov QWORD PTR[r8], r9\n" // OUT[l + i + j] = R[m + j]
+
+            // j++
+            "inc rbx\n"
+
+
+            // jump back to merge both
+            "jmp merge_both\n"
+                        
+            "fill_l:\n"
+
+            // if i >= m - l jump to fill r
+            "mov r8, QWORD PTR [rbp]\n"
+            "cmp rbx, r8\n"
+            "jge fill_r\n"
+
+            // nums[l + i + j] = L[l + i]            
+            "mov r8, %1\n"
+            "mov r10, rsi\n"
+            "add r10, rbx\n"
+            "shl r10, 2\n"
+            "add r8, r10\n"
+            "mov r8, QWORD PTR[r8]\n" // L[l + i]
+
+            "mov r9, %0\n"
+            "mov r10, rsi\n"
+            "add r10, rbx\n"
+            "add r10, rcx\n"
+            "shl r10, 2\n"
+            "add r9, r10\n"
+            "mov QWORD PTR[r9], r8\n" // OUT[l + i + j] = L[l + i]
+
+            "inc rbx\n"
+
+            // jump back to fill_l
+            "jmp fill_l\n"
+
+            "fill_r:\n"
+
+            // if j >= n - l jump to merge_cleanup
+            "mov r8, QWORD PTR [rbp]\n"
+            "cmp rbx, r8\n"
+            "jge copy_out_to_in\n"
+
+            // nums[l + i + j] = R[j]
+            "mov r9, %1\n"
+            "mov r10, rdx\n"
+            "add r10, rcx\n"
+            "shl r10, 2\n"
+            "add r9, r10\n"
+            "mov r9, QWORD PTR[r9]\n" // R[m + j]
 
             "mov r8, %0\n"
             "mov r10, rsi\n"
@@ -156,36 +213,37 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "add r10, rcx\n"
             "shl r10, 2\n"
             "add r8, r10\n"
-            "mov QWORD PTR[r8], r9\n" // OUT[l + i + j] = L[l + i]
+            "mov QWORD PTR[r8], r9\n" // OUT[l + i + j] = R[m + j]
 
-            // j++
-            "inc rbx\n"
-
-            // jump back to merge both
-            
-            "fill_l:\n"
-
-            // if i >= m - l jump to fill r
-
-            // nums[l + i + j] = L[i]
-
-            // jump back to fill_l
-
-            "fill_r:\n"
-
-            // if j >= n - l jump to merge_cleanup
-
-            // nums[l + i + j] = R[j]
+            "inc rcx\n"
 
             // jump back to fill_r
+            "jmp fill_r\n"
+
+            "copy_out_to_in:\n"
+
+            "xor r8, r8\n"
+            "mov r8d, edi\n"
+            "sub r8d, esi\n" // r8 = r - l
+            
+            "xor ecx, ecx\n"
+
+            "copy_array_back_start:\n"
+            "cmp ecx, r8d\n"
+            "jg copy_array_back_end\n"            
+            "mov ebx, DWORD PTR [%0 + rcx*4]\n"
+            "mov DWORD PTR [%1 + rcx*4], ebx\n"
+            "inc ecx\n"
+            "jmp copy_array_start\n"
+            "copy_array_back_end:\n"
 
             "merge_cleanup:\n"
 
             // restore rbp and rsp
-
             "mov rsp, rbp\n"
             "pop rbp\n"
 
+            // end merge
             "ret\n"
             "init:\n"
 
@@ -199,11 +257,9 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             "mov esi, 0\n"
             "mov edi, %2\n"
-            "sub edi, 1\n"
             "push rdi\n"
             "push rsi\n"
             "call merge_sort\n" 
-
             "pop rsi\n"
             "pop rdi\n"
             
