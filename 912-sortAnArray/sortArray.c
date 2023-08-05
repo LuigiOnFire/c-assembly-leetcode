@@ -18,38 +18,38 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "push rbp\n"
             "mov rbp, rsp\n"
             "mov esi, DWORD PTR [rbp + 0x10]\n" // this is l
-            "mov edi, DWORD PTR [rbp + 0x14]\n" // this is r
+            "mov edi, DWORD PTR [rbp + 0x18]\n" // this is r
             "cmp esi, edi\n" // if l >= r
             "jge merge_sort_end\n"
             "mov edx, esi\n"
             "add edx, edi\n"
             "shr edx, 1\n" // edx contains m = (l + r) / 2
 
-            "push edi\n" // this one is not used 
-            "push edx\n" // this will be the new r
-            "push esi\n" // this will be the new l
+            "push rdi\n" // this one is not used 
+            "push rdx\n" // this will be the new r
+            "push rsi\n" // this will be the new l
             "call merge_sort\n"
-            "pop esi\n"
-            "pop edx\n"
-            "pop edi\n"
+            "pop rsi\n"
+            "pop rdx\n"
+            "pop rdi\n"
 
             "inc edx\n" //m = m + 1
 
-            "push esi\n" // this one is not used 
-            "push edi\n" // this will be the new r
-            "push edx\n" // this will be the new l
+            "push rsi\n" // this one is not used 
+            "push rdi\n" // this will be the new r
+            "push rdx\n" // this will be the new l
             "call merge_sort\n"
-            "pop edx\n"
-            "pop edi\n"
-            "pop esi\n"
+            "pop rdx\n"
+            "pop rdi\n"
+            "pop rsi\n"
 
             "dec edx\n" //m = m - 1 (restoring it to previous value)
 
-            "push edi\n"
-            "push esi\n"
+            "push rdi\n"
+            "push rsi\n"
             "call merge\n"
-            "pop esi\n"
-            "pop edi\n"
+            "pop rsi\n"
+            "pop rdi\n"
             
             "merge_sort_end:" 
 
@@ -63,7 +63,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "mov rbp, rsp\n"
             
             "mov esi, DWORD PTR [rbp + 0x10]\n" // new l
-            "mov edi, DWORD PTR [rbp + 0x14]\n" // new r
+            "mov edi, DWORD PTR [rbp + 0x18]\n" // new r
             
             
             // get new m
@@ -75,13 +75,13 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "xor ebx, ebx\n"
             "mov ebx, edx\n"
             "sub ebx, esi\n"
-            "push ebx\n"
+            "push rbx\n"
 
             // save size of R = r - m
             "xor ebx, ebx\n"
             "mov ebx, edi\n"
             "sub ebx, edx\n"
-            "push ebx\n"
+            "push rbx\n"
 
             // move each element from A[l..r)
             "xor r8d, r8d\n"
@@ -144,7 +144,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "add r9d, r10d\n"
             "mov DWORD PTR[r9], r8d\n" // OUT[l + i + j] = L[l + i]            
 
-            // i++            
+            // i++
             "inc ebx\n"
 
             // jump back to merge both
@@ -176,7 +176,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "jge fill_r\n"
 
             // nums[l + i + j] = L[l + i]            
-            "mov r8d, %1\n"
+            "mov r8, %1\n"
             "mov r10d, esi\n"
             "add r10d, ebx\n"
             "shl r10d, 2\n"
@@ -234,7 +234,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             "copy_array_back_start:\n"
             "cmp ecx, r8d\n"
-            "jg copy_array_back_end\n"            
+            "jg copy_array_back_end\n"
             "mov ebx, DWORD PTR [%0 + rcx*4]\n"
             "mov DWORD PTR [%1 + rcx*4], ebx\n"
             "inc ecx\n"
@@ -263,11 +263,11 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             "mov esi, 0\n"
             "mov edi, %2\n"
-            "push edi\n"
-            "push esi\n"
+            "push rdi\n"
+            "push rsi\n"
             "call merge_sort\n" 
-            "pop esi\n"
-            "pop edi\n"
+            "pop rsi\n"
+            "pop rdi\n"
             
             ".att_syntax\n"
             : "+r" (out)
