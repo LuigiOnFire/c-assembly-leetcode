@@ -17,39 +17,39 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "merge_sort:\n"\
             "push rbp\n"
             "mov rbp, rsp\n"
-            "mov rsi, QWORD PTR [rbp + 0x10]\n" // this is l
-            "mov rdi, QWORD PTR [rbp + 0x18]\n" // this is r
-            "cmp rsi, rdi\n" // if l >= r
+            "mov esi, DWORD PTR [rbp + 0x10]\n" // this is l
+            "mov edi, DWORD PTR [rbp + 0x14]\n" // this is r
+            "cmp esi, edi\n" // if l >= r
             "jge merge_sort_end\n"
-            "mov rdx, rsi\n"
-            "add rdx, rdi\n"
-            "shr rdx, 1\n" // rdx contains m = (l + r) / 2
+            "mov edx, esi\n"
+            "add edx, edi\n"
+            "shr edx, 1\n" // edx contains m = (l + r) / 2
 
-            "push rdi\n" // this one is not used 
-            "push rdx\n" // this will be the new r
-            "push rsi\n" // this will be the new l
+            "push edi\n" // this one is not used 
+            "push edx\n" // this will be the new r
+            "push esi\n" // this will be the new l
             "call merge_sort\n"
-            "pop rsi\n"
-            "pop rdx\n"
-            "pop rdi\n"
+            "pop esi\n"
+            "pop edx\n"
+            "pop edi\n"
 
-            "inc rdx\n" //m = m + 1
+            "inc edx\n" //m = m + 1
 
-            "push rsi\n" // this one is not used 
-            "push rdi\n" // this will be the new r
-            "push rdx\n" // this will be the new l
+            "push esi\n" // this one is not used 
+            "push edi\n" // this will be the new r
+            "push edx\n" // this will be the new l
             "call merge_sort\n"
-            "pop rdx\n"
-            "pop rdi\n"
-            "pop rsi\n"
+            "pop edx\n"
+            "pop edi\n"
+            "pop esi\n"
 
-            "dec rdx\n" //m = m - 1 (restoring it to previous value)
+            "dec edx\n" //m = m - 1 (restoring it to previous value)
 
-            "push rdi\n"
-            "push rsi\n"
+            "push edi\n"
+            "push esi\n"
             "call merge\n"
-            "pop rsi\n"
-            "pop rdi\n"
+            "pop esi\n"
+            "pop edi\n"
             
             "merge_sort_end:" 
 
@@ -62,90 +62,90 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "push rbp\n"
             "mov rbp, rsp\n"
             
-            "mov rsi, QWORD PTR [rbp + 0x10]\n" // new l
-            "mov rdi, QWORD PTR [rbp + 0x18]\n" // new r
+            "mov esi, DWORD PTR [rbp + 0x10]\n" // new l
+            "mov edi, DWORD PTR [rbp + 0x14]\n" // new r
             
             
             // get new m
-            "mov rdx, rsi\n"
-            "add rdx, rdi\n"
-            "shr rdx, 1\n" // new m
+            "mov edx, esi\n"
+            "add edx, edi\n"
+            "shr edx, 1\n" // new m
 
             // save size of L = m - l
-            "xor rbx, rbx\n"
-            "mov rbx, rdx\n"
-            "sub rbx, rsi\n"
-            "push rbx\n"
+            "xor ebx, ebx\n"
+            "mov ebx, edx\n"
+            "sub ebx, esi\n"
+            "push ebx\n"
 
             // save size of R = r - m
-            "xor rbx, rbx\n"
-            "mov rbx, rdi\n"
-            "sub rbx, rdx\n"
-            "push rbx\n"
+            "xor ebx, ebx\n"
+            "mov ebx, edi\n"
+            "sub ebx, edx\n"
+            "push ebx\n"
 
             // move each element from A[l..r)
-            "xor r8, r8\n"
-            "mov r8, rdi\n"
-            "sub r8, rsi\n" // r8 = r - l
+            "xor r8d, r8d\n"
+            "mov r8d, edi\n"
+            "sub r8d, esi\n" // r8 = r - l
             
-            "xor rcx, rcx\n"
+            "xor ecx, ecx\n"
             "copy_array_start:\n"            
-            "cmp rcx, r8\n"
+            "cmp ecx, r8d\n"
             "jg copy_array_end\n"            
-            "mov rbx, QWORD PTR [%1 + rcx*4]\n"
+            "mov ebx, DWORD PTR [%1 + rcx*4]\n"
             "mov QWORD PTR [%0 + rcx*4], rbx\n"
-            "inc rcx\n"
+            "inc ecx\n"
             "jmp copy_array_start\n"
             "copy_array_end:\n"
 
             // set up i = 0
-            "xor rbx, rbx\n"
+            "xor ebx, ebx\n"
 
             // set up j = 0
-            "xor rcx, rcx\n"
+            "xor ecx, ecx\n"
 
             "merge_both:\n"
 
             // if i >= m - l || j >= r - m then jump to fill_l            
 
-            "mov r8, QWORD PTR [rbp]\n" // temporarily holding m - l
-            "cmp rbx, r8\n"
+            "mov r8d, DWORD PTR [rbp]\n" // temporarily holding m - l
+            "cmp ebx, r8d\n"
             "jg fill_l\n"
 
-            "mov r8, QWORD PTR [rbp - 8]\n"
+            "mov r8d, DWORD PTR [rbp - 4]\n"
             "cmp rcx, r8\n"
             "jg fill_l\n"
 
             // Do L if L[i] >= R[j] jump to doing R instead
 
             "mov r8, %1\n"
-            "mov r10, rsi\n"
-            "add r10, rbx\n"
-            "shl r10, 2\n"
-            "add r8, r10\n"
-            "mov r8, QWORD PTR[r8]\n" // L[l + i]
+            "mov r10d, esi\n"
+            "add r10d, ebx\n"
+            "shl r10d, 2\n"
+            "add r8d, r10d\n"
+            "mov r8d, DWORD PTR[r8]\n" // L[l + i]
 
             "mov r9, %1\n"
-            "mov r10, rdx\n"
-            "add r10, rcx\n"
-            "shl r10, 2\n"
-            "add r8, r10\n"
-            "mov r9, QWORD PTR[r9]\n" // R[m + j]
+            "mov r10d, edx\n"
+            "add r10d, ecx\n"
+            "shl r10d, 2\n"
+            "add r8d, r10d\n"
+            "mov r9d, DWORD PTR[r9]\n" // R[m + j]
         
-            "cmp r8, r9\n"
+            "cmp r8d, r9d\n"
             "jg merge_r\n"
 
             // nums[l + i + j] = L[l + i]
             "mov r9, %0\n"
-            "mov r10, rsi\n"
-            "add r10, rbx\n"
-            "add r10, rcx\n"
-            "shl r10, 2\n"
-            "add r9, r10\n"
-            "mov QWORD PTR[r9], r8\n" // OUT[l + i + j] = L[l + i]            
+            "mov r10d, esi\n"
+            "add r10d, ebx\n"
+            "add r10d, ecx\n"
+            "shl r10d, 2\n"
+            "add r9d, r10d\n"
+            "mov DWORD PTR[r9], r8d\n" // OUT[l + i + j] = L[l + i]            
 
             // i++            
-            "inc rbx\n"
+            "inc ebx\n"
 
             // jump back to merge both
             "jmp merge_both\n"
@@ -154,15 +154,15 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             // nums[l + i + j] = R[m + j]            
             "mov r8, %0\n"
-            "mov r10, rsi\n"
-            "add r10, rbx\n"
-            "add r10, rcx\n"
-            "shl r10, 2\n"
-            "add r8, r10\n"
-            "mov QWORD PTR[r8], r9\n" // OUT[l + i + j] = R[m + j]
+            "mov r10d, esi\n"
+            "add r10d, ebx\n"
+            "add r10d, ecx\n"
+            "shl r10d, 2\n"
+            "add r8d, r10d\n"
+            "mov DWORD PTR[r8], r9d\n" // OUT[l + i + j] = R[m + j]
 
             // j++
-            "inc rbx\n"
+            "inc ebx\n"
 
 
             // jump back to merge both
@@ -171,72 +171,72 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "fill_l:\n"
 
             // if i >= m - l jump to fill r
-            "mov r8, QWORD PTR [rbp]\n"
-            "cmp rbx, r8\n"
+            "mov r8d, DWORD PTR [rbp]\n"
+            "cmp ebx, r8d\n"
             "jge fill_r\n"
 
             // nums[l + i + j] = L[l + i]            
-            "mov r8, %1\n"
-            "mov r10, rsi\n"
-            "add r10, rbx\n"
-            "shl r10, 2\n"
-            "add r8, r10\n"
-            "mov r8, QWORD PTR[r8]\n" // L[l + i]
+            "mov r8d, %1\n"
+            "mov r10d, esi\n"
+            "add r10d, ebx\n"
+            "shl r10d, 2\n"
+            "add r8d, r10d\n"
+            "mov r8d, DWORD PTR[r8]\n" // L[l + i]
 
             "mov r9, %0\n"
-            "mov r10, rsi\n"
-            "add r10, rbx\n"
-            "add r10, rcx\n"
-            "shl r10, 2\n"
-            "add r9, r10\n"
-            "mov QWORD PTR[r9], r8\n" // OUT[l + i + j] = L[l + i]
+            "mov r10d, esi\n"
+            "add r10d, ebx\n"
+            "add r10d, ecx\n"
+            "shl r10d, 2\n"
+            "add r9d, r10d\n"
+            "mov DWORD PTR[r9], r8d\n" // OUT[l + i + j] = L[l + i]
 
-            "inc rbx\n"
+            "inc ebx\n"
 
             // jump back to fill_l
             "jmp fill_l\n"
 
             "fill_r:\n"
 
-            // if j >= n - l jump to merge_cleanup
-            "mov r8, QWORD PTR [rbp]\n"
-            "cmp rbx, r8\n"
+            // if j >= m - l jump to merge_cleanup
+            "mov r8d, DWORD PTR [rbp]\n"
+            "cmp ebx, r8d\n"
             "jge copy_out_to_in\n"
 
             // nums[l + i + j] = R[j]
             "mov r9, %1\n"
-            "mov r10, rdx\n"
-            "add r10, rcx\n"
-            "shl r10, 2\n"
-            "add r9, r10\n"
-            "mov r9, QWORD PTR[r9]\n" // R[m + j]
+            "mov r10d, edx\n"
+            "add r10d, ecx\n"
+            "shl r10d, 2\n"
+            "add r9d, r10d\n"
+            "mov r9d, DWORD PTR[r9]\n" // R[m + j]
 
             "mov r8, %0\n"
-            "mov r10, rsi\n"
-            "add r10, rbx\n"
-            "add r10, rcx\n"
-            "shl r10, 2\n"
-            "add r8, r10\n"
-            "mov QWORD PTR[r8], r9\n" // OUT[l + i + j] = R[m + j]
+            "mov r10d, esi\n"
+            "add r10d, ebx\n"
+            "add r10d, ecx\n"
+            "shl r10d, 2\n"
+            "add r8d, r10d\n"
+            "mov DWORD PTR[r8], r9d\n" // OUT[l + i + j] = R[m + j]
 
-            "inc rcx\n"
+            "inc ecx\n"
 
             // jump back to fill_r
             "jmp fill_r\n"
 
             "copy_out_to_in:\n"
 
-            "xor r8, r8\n"
-            "mov r8, rdi\n"
-            "sub r8, rsi\n" // r8 = r - l
+            "xor r8d, r8d\n"
+            "mov r8d, edi\n"
+            "sub r8d, esi\n" // r8 = r - l
             
             "xor rcx, rcx\n"
 
             "copy_array_back_start:\n"
-            "cmp rcx, r8\n"
+            "cmp ecx, r8d\n"
             "jg copy_array_back_end\n"            
-            "mov rbx, QWORD PTR [%0 + rcx*4]\n"
-            "mov QWORD PTR [%1 + rcx*4], rbx\n"
+            "mov ebx, DWORD PTR [%0 + rcx*4]\n"
+            "mov DWORD PTR [%1 + rcx*4], ebx\n"
             "inc ecx\n"
             "jmp copy_array_start\n"
             "copy_array_back_end:\n"
@@ -261,13 +261,13 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "xor rax, rax\n"
             "mov rax, %1\n"
 
-            "mov rsi, 0\n"
+            "mov esi, 0\n"
             "mov edi, %2\n"
-            "push rdi\n"
-            "push rsi\n"
+            "push edi\n"
+            "push esi\n"
             "call merge_sort\n" 
-            "pop rsi\n"
-            "pop rdi\n"
+            "pop esi\n"
+            "pop edi\n"
             
             ".att_syntax\n"
             : "+r" (out)
