@@ -108,13 +108,13 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             // if i >= m - l || j >= r - m then jump to fill_l            
 
-            "mov r8d, DWORD PTR [rbp]\n" // temporarily holding m - l
+            "mov r8d, DWORD PTR [rbp - 0x8]\n" // temporarily holding m - l
             "cmp ebx, r8d\n"
-            "jg fill_l\n"
+            "jge fill_l\n"
 
-            "mov r8d, DWORD PTR [rbp - 4]\n"
-            "cmp rcx, r8\n"
-            "jg fill_l\n"
+            "mov r8d, DWORD PTR [rbp - 0x10]\n"
+            "cmp ecx, r8d\n"
+            "jge fill_l\n"
 
             // Do L if L[i] >= R[j] jump to doing R instead
 
@@ -171,7 +171,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "fill_l:\n"
 
             // if i >= m - l jump to fill r
-            "mov r8d, DWORD PTR [rbp]\n"
+            "mov r8d, DWORD PTR [rbp - 0x8]\n"
             "cmp ebx, r8d\n"
             "jge fill_r\n"
 
@@ -199,8 +199,8 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "fill_r:\n"
 
             // if j >= m - l jump to merge_cleanup
-            "mov r8d, DWORD PTR [rbp]\n"
-            "cmp ebx, r8d\n"
+            "mov r8d, DWORD PTR [rbp - 0x10]\n"
+            "cmp ecx, r8d\n"
             "jge copy_out_to_in\n"
 
             // nums[l + i + j] = R[j]
@@ -238,7 +238,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "mov ebx, DWORD PTR [%0 + rcx*4]\n"
             "mov DWORD PTR [%1 + rcx*4], ebx\n"
             "inc ecx\n"
-            "jmp copy_array_start\n"
+            "jmp copy_array_back_start\n"
             "copy_array_back_end:\n"
 
             "merge_cleanup:\n"
