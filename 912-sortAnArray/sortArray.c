@@ -278,9 +278,9 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 }
 
 int main(){
-    int numsSize = 2;
+    int numsSize = 4;
     //int nums[] = {0, 1, 2, 3};
-    int nums[] = {1, 0};
+    int nums[] = {3, 2, 1, 0};
     int returnSize;
     
     int* out = sortArray(nums, numsSize, &returnSize);
