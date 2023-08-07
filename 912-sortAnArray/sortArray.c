@@ -129,7 +129,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "mov r10d, edx\n"
             "add r10d, ecx\n"
             "shl r10d, 2\n"
-            "add r8d, r10d\n"
+            "add r9d, r10d\n"
             "mov r9d, DWORD PTR[r9]\n" // R[m + j]
         
             "cmp r8d, r9d\n"
@@ -162,7 +162,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "mov DWORD PTR[r8], r9d\n" // OUT[l + i + j] = R[m + j]
 
             // j++
-            "inc ebx\n"
+            "inc ecx\n"
 
 
             // jump back to merge both
@@ -203,7 +203,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "cmp ecx, r8d\n"
             "jge copy_out_to_in\n"
 
-            // nums[l + i + j] = R[j]
+            // nums[l + i + j] = R[m + j]
             "mov r9, %1\n"
             "mov r10d, edx\n"
             "add r10d, ecx\n"
