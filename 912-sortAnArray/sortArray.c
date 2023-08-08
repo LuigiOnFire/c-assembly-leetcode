@@ -7,20 +7,20 @@
 int* sortArray(int* nums, int numsSize, int* returnSize){
     int* out = malloc(numsSize*sizeof(int));
 
-    // __asm__ volatile(R"(.intel_syntax noprefix
-    //     )"
-
+    
     __asm__ volatile(".intel_syntax noprefix\n"
 
             "jmp init\n"
 
-            "merge_sort:\n"\
+            "merge_sort:\n"
             "push rbp\n"
             "mov rbp, rsp\n"
             "mov esi, DWORD PTR [rbp + 0x10]\n" // this is l
             "mov edi, DWORD PTR [rbp + 0x18]\n" // this is r
-            "cmp esi, edi\n" // if l >= r
-            "jge merge_sort_end\n"
+            "mov ebx, edi\n"
+            "sub ebx, esi\n"
+            "cmp ebx, 1\n" // if r - l <= 1
+            "jle merge_sort_end\n"
             "mov edx, esi\n"
             "add edx, edi\n"
             "shr edx, 1\n" // edx contains m = (l + r) / 2
@@ -33,8 +33,6 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "pop rdx\n"
             "pop rdi\n"
 
-            "inc edx\n" //m = m + 1
-
             "push rsi\n" // this one is not used 
             "push rdi\n" // this will be the new r
             "push rdx\n" // this will be the new l
@@ -43,15 +41,13 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "pop rdi\n"
             "pop rsi\n"
 
-            "dec edx\n" //m = m - 1 (restoring it to previous value)
-
             "push rdi\n"
             "push rsi\n"
             "call merge\n"
             "pop rsi\n"
             "pop rdi\n"
             
-            "merge_sort_end:" 
+            "merge_sort_end:\n" 
 
             "mov rsp, rbp\n"
             "pop rbp\n"
@@ -109,7 +105,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             // if i >= m - l || j >= r - m then jump to fill_l            
 
             "mov r8d, DWORD PTR [rbp - 0x8]\n" // temporarily holding m - l
-            "cmp ebx, r8d\n"
+            "cmp ebx, r8d\n"            
             "jge fill_l\n"
 
             "mov r8d, DWORD PTR [rbp - 0x10]\n"
@@ -226,17 +222,19 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             "copy_out_to_in:\n"
 
-            "xor r8d, r8d\n"
+            "xor r8, r8\n"
             "mov r8d, edi\n"
-            "sub r8d, esi\n" // r8 = r - l
-            
-            "xor rcx, rcx\n"
+            "sub r8d, esi\n" // r8 = r - l            
+            "xor rcx, rcx\n"    
 
             "copy_array_back_start:\n"
+
             "cmp ecx, r8d\n"
-            "jg copy_array_back_end\n"
-            "mov ebx, DWORD PTR [%0 + rcx*4]\n"
-            "mov DWORD PTR [%1 + rcx*4], ebx\n"
+            "jge copy_array_back_end\n"
+            "mov r10d, esi\n"
+            "add r10d, ecx\n"
+            "mov ebx, DWORD PTR [%0 + r10*4]\n"
+            "mov DWORD PTR [%1 + r10*4], ebx\n"
             "inc ecx\n"
             "jmp copy_array_back_start\n"
             "copy_array_back_end:\n"
@@ -270,22 +268,21 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "pop rdi\n"
             
             ".att_syntax\n"
-            : "+r" (out)
-            : "r" (nums), "r" (numsSize), "r" (returnSize)
+            : 
+            : "r" (out), "r" (nums), "r" (numsSize), "r" (returnSize)
             : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10");
 
             return nums;
 }
 
 int main(){
-    int numsSize = 4;
-    //int nums[] = {0, 1, 2, 3};
-    int nums[] = {3, 2, 1, 0};
+    int numsSize = 6;
+    int nums[] = {1, 2, 4, 3, 5, 6};
     int returnSize;
     
     int* out = sortArray(nums, numsSize, &returnSize);
     for(int i = 0; i < numsSize; i++){
-        printf("%d, ", out[i]);
+        printf("%d, ", nums[i]);
     }
     printf("\n");
 }
