@@ -7,8 +7,8 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
     int* out = malloc(numsSize*sizeof(int));
     
     __asm__ volatile(".intel_syntax noprefix\n"
-            "mov eax, %2\n"
-            "mov [%3], eax\n"
+            "mov eax, %3\n"
+            "mov [%0], eax\n"
             "xor rcx, rcx\n"
             "xor rsi, rsi\n"
             "xor rdi, rdi\n"
@@ -18,7 +18,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "mov rax, %1\n"
 
             "mov esi, 0\n"
-            "mov edi, %2\n"
+            "mov edi, %3\n"
             "push rdi\n"
             "push rsi\n"
             "call merge_sort\n" 
@@ -103,8 +103,8 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "copy_array_start:\n"            
             "cmp ecx, r8d\n"
             "jg copy_array_end\n"            
-            "mov ebx, DWORD PTR [%1 + rcx*4]\n"
-            "mov QWORD PTR [%0 + rcx*4], rbx\n"
+            "mov ebx, DWORD PTR [%2 + rcx*4]\n"
+            "mov QWORD PTR [%1 + rcx*4], rbx\n"
             "inc ecx\n"
             "jmp copy_array_start\n"
             "copy_array_end:\n"
@@ -129,14 +129,14 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 
             // Do L if L[i] >= R[j] jump to doing R instead
 
-            "mov r8, %1\n"
+            "mov r8, %2\n"
             "mov r10d, esi\n"
             "add r10d, ebx\n"
             "shl r10d, 2\n"
             "add r8d, r10d\n"
             "mov r8d, DWORD PTR[r8]\n" // L[l + i]
 
-            "mov r9, %1\n"
+            "mov r9, %2\n"
             "mov r10d, edx\n"
             "add r10d, ecx\n"
             "shl r10d, 2\n"
@@ -147,7 +147,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "jg merge_r\n"
 
             // nums[l + i + j] = L[l + i]
-            "mov r9, %0\n"
+            "mov r9, %1\n"
             "mov r10d, esi\n"
             "add r10d, ebx\n"
             "add r10d, ecx\n"
@@ -164,7 +164,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "merge_r:\n"
 
             // nums[l + i + j] = R[m + j]            
-            "mov r8, %0\n"
+            "mov r8, %1\n"
             "mov r10d, esi\n"
             "add r10d, ebx\n"
             "add r10d, ecx\n"
@@ -187,14 +187,14 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "jge fill_r\n"
 
             // nums[l + i + j] = L[l + i]            
-            "mov r8, %1\n"
+            "mov r8, %2\n"
             "mov r10d, esi\n"
             "add r10d, ebx\n"
             "shl r10d, 2\n"
             "add r8d, r10d\n"
             "mov r8d, DWORD PTR[r8]\n" // L[l + i]
 
-            "mov r9, %0\n"
+            "mov r9, %1\n"
             "mov r10d, esi\n"
             "add r10d, ebx\n"
             "add r10d, ecx\n"
@@ -215,14 +215,14 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "jge copy_out_to_in\n"
 
             // nums[l + i + j] = R[m + j]
-            "mov r9, %1\n"
+            "mov r9, %2\n"
             "mov r10d, edx\n"
             "add r10d, ecx\n"
             "shl r10d, 2\n"
             "add r9d, r10d\n"
             "mov r9d, DWORD PTR[r9]\n" // R[m + j]
 
-            "mov r8, %0\n"
+            "mov r8, %1\n"
             "mov r10d, esi\n"
             "add r10d, ebx\n"
             "add r10d, ecx\n"
@@ -248,8 +248,8 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "jge copy_array_back_end\n"
             "mov r10d, esi\n"
             "add r10d, ecx\n"
-            "mov ebx, DWORD PTR [%0 + r10*4]\n"
-            "mov DWORD PTR [%1 + r10*4], ebx\n"
+            "mov ebx, DWORD PTR [%1 + r10*4]\n"
+            "mov DWORD PTR [%2 + r10*4], ebx\n"
             "inc ecx\n"
             "jmp copy_array_back_start\n"
             "copy_array_back_end:\n"
@@ -266,9 +266,9 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "end:\n"
 
             ".att_syntax\n"
-            : "+r" (out)
-            : "rm" (nums), "rm" (numsSize), "rm" (returnSize)
-            : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "cc");
+            : "+r" (returnSize)
+            : "r" (out), "r" (nums), "r" (numsSize)
+            : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10");
 
             return nums;
 }
