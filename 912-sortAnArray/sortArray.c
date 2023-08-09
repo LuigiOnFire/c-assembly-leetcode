@@ -3,273 +3,287 @@
 /**
  * Note: The returned array must be malloced, assume caller calls free().
  */
+
+void start_merge(int* nums, int numsSize, int* returnSize, int* out);
+
 int* sortArray(int* nums, int numsSize, int* returnSize){
     int* out = malloc(numsSize*sizeof(int));
+}
     
-    __asm__ volatile(".intel_syntax noprefix\n"
-            "mov [%0], %3\n"            
-            "xor rcx, rcx\n"
-            "xor rsi, rsi\n"
-            "xor rdi, rdi\n"
-            // rax will remain the start of our array
 
-            "xor rax, rax\n"
-            "mov rax, %1\n"
+asm(R"(
+    .intel_syntax noprefix
+    start_merge:
+            mov DWORD PTR[edx], esi # numsize into return size
 
-            "mov esi, 0\n"
-            "mov edi, %3\n"
-            "push rdi\n"
-            "push rsi\n"
-            "call merge_sort\n" 
-            "pop rsi\n"
-            "pop rdi\n"
+            # rax will remain the start of our array
+            xor rax, rax
+            mov rax, rdi
 
-            "jmp end\n"
+            mov esi, 0
+            mov edi, esi # this moves numsSize into edi
+            push rdi
+            push rsi
+            call merge_sort 
+            pop rsi
+            pop rdi
 
-            "merge_sort:\n"
-            "push rbp\n"
-            "mov rbp, rsp\n"
-            "mov esi, DWORD PTR [rbp + 0x10]\n" // this is l
-            "mov edi, DWORD PTR [rbp + 0x18]\n" // this is r
-            "mov ebx, edi\n"
-            "sub ebx, esi\n"
-            "cmp ebx, 1\n" // if r - l <= 1
-            "jle merge_sort_end\n"
-            "mov edx, esi\n"
-            "add edx, edi\n"
-            "shr edx, 1\n" // edx contains m = (l + r) / 2
+            jmp end
 
-            "push rdi\n" // this one is not used 
-            "push rdx\n" // this will be the new r
-            "push rsi\n" // this will be the new l
-            "call merge_sort\n"
-            "pop rsi\n"
-            "pop rdx\n"
-            "pop rdi\n"
+            merge_sort:
+            push rbp
+            mov rbp, rsp
+            mov esi, DWORD PTR [rbp + 0x10] # this is l
+            mov edi, DWORD PTR [rbp + 0x18] # this is r
+            mov ebx, edi
+            sub ebx, esi
+            cmp ebx, 1 // if r - l <= 1
+            jle merge_sort_end
+            mov edx, esi
+            add edx, edi
+            shr edx, 1 # edx contains m = (l + r) / 2
 
-            "push rsi\n" // this one is not used 
-            "push rdi\n" // this will be the new r
-            "push rdx\n" // this will be the new l
-            "call merge_sort\n"
-            "pop rdx\n"
-            "pop rdi\n"
-            "pop rsi\n"
+            push rdi # this one is not used 
+            push rdx # this will be the new r
+            push rsi # this will be the new l
+            call merge_sort
+            pop rsi
+            pop rdx
+            pop rdi
 
-            "push rdi\n"
-            "push rsi\n"
-            "call merge\n"
-            "pop rsi\n"
-            "pop rdi\n"
+            push rsi # this one is not used 
+            push rdi # this will be the new r
+            push rdx # this will be the new l
+            call merge_sort
+            pop rdx
+            pop rdi
+            pop rsi
+
+            push rdi
+            push rsi
+            call merge
+            pop rsi
+            pop rdi
             
-            "merge_sort_end:\n" 
+            merge_sort_end: 
 
-            "mov rsp, rbp\n"
-            "pop rbp\n"
-            "ret\n"
+            mov rsp, rbp
+            pop rbp
+            ret
 
-            "merge:\n"
+            merge:
 
-            "push rbp\n"
-            "mov rbp, rsp\n"
+            push rbp
+            mov rbp, rsp
             
-            "mov esi, DWORD PTR [rbp + 0x10]\n" // new l
-            "mov edi, DWORD PTR [rbp + 0x18]\n" // new r
+            mov esi, DWORD PTR [rbp + 0x10] # new l
+            mov edi, DWORD PTR [rbp + 0x18] # new r
             
             
-            // get new m
-            "mov edx, esi\n"
-            "add edx, edi\n"
-            "shr edx, 1\n" // new m
+            # get new m
+            mov edx, esi
+            add edx, edi
+            shr edx, 1 # new m
 
-            // save size of L = m - l
-            "xor ebx, ebx\n"
-            "mov ebx, edx\n"
-            "sub ebx, esi\n"
-            "push rbx\n"
+            # save size of L = m - l
+            xor ebx, ebx
+            mov ebx, edx
+            sub ebx, esi
+            push rbx
 
-            // save size of R = r - m
-            "xor ebx, ebx\n"
-            "mov ebx, edi\n"
-            "sub ebx, edx\n"
-            "push rbx\n"
+            # save size of R = r - m
+            xor ebx, ebx
+            mov ebx, edi
+            sub ebx, edx
+            push rbx
 
-            // move each element from A[l..r)
-            "xor r8d, r8d\n"
-            "mov r8d, edi\n"
-            "sub r8d, esi\n" // r8 = r - l
+            # # move each element from A[l..r]
+            xor r8d, r8d
+            mov r8d, edi
+            sub r8d, esi # r8 = r - l
             
-            "xor ecx, ecx\n"
-            "copy_array_start:\n"            
-            "cmp ecx, r8d\n"
-            "jg copy_array_end\n"            
-            "mov ebx, DWORD PTR [%2 + rcx*4]\n"
-            "mov QWORD PTR [%1 + rcx*4], rbx\n"
-            "inc ecx\n"
-            "jmp copy_array_start\n"
-            "copy_array_end:\n"
+            xor ecx, ecx
+            copy_array_start:            
+            cmp ecx, r8d
+            jg copy_array_end            
+            mov ebx, DWORD PTR [%2 + rcx*4]
+            mov QWORD PTR [%1 + rcx*4], rbx
+            inc ecx
+            jmp copy_array_start
+            copy_array_end:
 
-            // set up i = 0
-            "xor ebx, ebx\n"
+            # set up i = 0
+            xor ebx, ebx
 
-            // set up j = 0
-            "xor ecx, ecx\n"
+            # set up j = 0
+            xor ecx, ecx
 
-            "merge_both:\n"
+            merge_both:
 
-            // if i >= m - l || j >= r - m then jump to fill_l            
+            # if i >= m - l || j >= r - m then jump to fill_l            
 
-            "mov r8d, DWORD PTR [rbp - 0x8]\n" // temporarily holding m - l
-            "cmp ebx, r8d\n"            
-            "jge fill_l\n"
+            mov r8d, DWORD PTR [rbp - 0x8] # temporarily holding m - l
+            cmp ebx, r8d            
+            jge fill_l
 
-            "mov r8d, DWORD PTR [rbp - 0x10]\n"
-            "cmp ecx, r8d\n"
-            "jge fill_l\n"
+            mov r8d, DWORD PTR [rbp - 0x10]
+            cmp ecx, r8d
+            jge fill_l
 
-            // Do L if L[i] >= R[j] jump to doing R instead
+            # Do L if L[i] >= R[j] jump to doing R instead
 
-            "mov r8, %2\n"
-            "mov r10d, esi\n"
-            "add r10d, ebx\n"
-            "shl r10d, 2\n"
-            "add r8d, r10d\n"
-            "mov r8d, DWORD PTR[r8]\n" // L[l + i]
+            mov r8, %2
+            mov r10d, esi
+            add r10d, ebx
+            shl r10d, 2
+            add r8d, r10d
+            mov r8d, DWORD PTR[r8] # L[l + i]
 
-            "mov r9, %2\n"
-            "mov r10d, edx\n"
-            "add r10d, ecx\n"
-            "shl r10d, 2\n"
-            "add r9d, r10d\n"
-            "mov r9d, DWORD PTR[r9]\n" // R[m + j]
+            mov r9, %2
+            mov r10d, edx
+            add r10d, ecx
+            shl r10d, 2
+            add r9d, r10d
+            mov r9d, DWORD PTR[r9] # R[m + j]
         
-            "cmp r8d, r9d\n"
-            "jg merge_r\n"
+            cmp r8d, r9d
+            jg merge_r
 
-            // nums[l + i + j] = L[l + i]
-            "mov r9, %1\n"
-            "mov r10d, esi\n"
-            "add r10d, ebx\n"
-            "add r10d, ecx\n"
-            "shl r10d, 2\n"
-            "add r9d, r10d\n"
-            "mov DWORD PTR[r9], r8d\n" // OUT[l + i + j] = L[l + i]            
+            # nums[l + i + j] = L[l + i]
+            mov r9, %1
+            mov r10d, esi
+            add r10d, ebx
+            add r10d, ecx
+            shl r10d, 2
+            add r9d, r10d
+            mov DWORD PTR[r9], r8d # OUT[l + i + j] = L[l + i]            
 
-            // i++
-            "inc ebx\n"
+            # i++
+            inc ebx
 
-            // jump back to merge both
-            "jmp merge_both\n"
+            # jump back to merge both
+            jmp merge_both
 
-            "merge_r:\n"
+            merge_r:
 
-            // nums[l + i + j] = R[m + j]            
-            "mov r8, %1\n"
-            "mov r10d, esi\n"
-            "add r10d, ebx\n"
-            "add r10d, ecx\n"
-            "shl r10d, 2\n"
-            "add r8d, r10d\n"
-            "mov DWORD PTR[r8], r9d\n" // OUT[l + i + j] = R[m + j]
+            # nums[l + i + j] = R[m + j]            
+            mov r8, %1
+            mov r10d, esi
+            add r10d, ebx
+            add r10d, ecx
+            shl r10d, 2
+            add r8d, r10d
+            mov DWORD PTR[r8], r9d # OUT[l + i + j] = R[m + j]
 
-            // j++
-            "inc ecx\n"
+            # j++
+            inc ecx
 
 
-            // jump back to merge both
-            "jmp merge_both\n"
+            # jump back to merge both
+            jmp merge_both
                         
-            "fill_l:\n"
+            fill_l:
 
-            // if i >= m - l jump to fill r
-            "mov r8d, DWORD PTR [rbp - 0x8]\n"
-            "cmp ebx, r8d\n"
-            "jge fill_r\n"
+            # if i >= m - l jump to fill r
+            mov r8d, DWORD PTR [rbp - 0x8]
+            cmp ebx, r8d
+            jge fill_r
 
-            // nums[l + i + j] = L[l + i]            
-            "mov r8, %2\n"
-            "mov r10d, esi\n"
-            "add r10d, ebx\n"
-            "shl r10d, 2\n"
-            "add r8d, r10d\n"
-            "mov r8d, DWORD PTR[r8]\n" // L[l + i]
+            # nums[l + i + j] = L[l + i]            
+            mov r8, %2
+            mov r10d, esi
+            add r10d, ebx
+            shl r10d, 2
+            add r8d, r10d
+            mov r8d, DWORD PTR[r8] # L[l + i]
 
-            "mov r9, %1\n"
-            "mov r10d, esi\n"
-            "add r10d, ebx\n"
-            "add r10d, ecx\n"
-            "shl r10d, 2\n"
-            "add r9d, r10d\n"
-            "mov DWORD PTR[r9], r8d\n" // OUT[l + i + j] = L[l + i]
+            mov r9, %1
+            mov r10d, esi
+            add r10d, ebx
+            add r10d, ecx
+            shl r10d, 2
+            add r9d, r10d
+            mov DWORD PTR[r9], r8d # OUT[l + i + j] = L[l + i]
 
-            "inc ebx\n"
+            inc ebx
 
-            // jump back to fill_l
-            "jmp fill_l\n"
+            # jump back to fill_l
+            jmp fill_l
 
-            "fill_r:\n"
+            fill_r:
 
-            // if j >= m - l jump to merge_cleanup
-            "mov r8d, DWORD PTR [rbp - 0x10]\n"
-            "cmp ecx, r8d\n"
-            "jge copy_out_to_in\n"
+            # if j >= m - l jump to merge_cleanup
+            mov r8d, DWORD PTR [rbp - 0x10]
+            cmp ecx, r8d
+            jge copy_out_to_in
 
-            // nums[l + i + j] = R[m + j]
-            "mov r9, %2\n"
-            "mov r10d, edx\n"
-            "add r10d, ecx\n"
-            "shl r10d, 2\n"
-            "add r9d, r10d\n"
-            "mov r9d, DWORD PTR[r9]\n" // R[m + j]
+            # nums[l + i + j] = R[m + j]
+            mov r9, %2
+            mov r10d, edx
+            add r10d, ecx
+            shl r10d, 2
+            add r9d, r10d
+            mov r9d, DWORD PTR[r9] # R[m + j]
 
-            "mov r8, %1\n"
-            "mov r10d, esi\n"
-            "add r10d, ebx\n"
-            "add r10d, ecx\n"
-            "shl r10d, 2\n"
-            "add r8d, r10d\n"
-            "mov DWORD PTR[r8], r9d\n" // OUT[l + i + j] = R[m + j]
+            mov r8, %1
+            mov r10d, esi
+            add r10d, ebx
+            add r10d, ecx
+            shl r10d, 2
+            add r8d, r10d
+            mov DWORD PTR[r8], r9d # OUT[l + i + j] = R[m + j]
 
-            "inc ecx\n"
+            inc ecx
 
-            // jump back to fill_r
-            "jmp fill_r\n"
+            # jump back to fill_r
+            jmp fill_r
 
-            "copy_out_to_in:\n"
+            copy_out_to_in:
 
-            "xor r8, r8\n"
-            "mov r8d, edi\n"
-            "sub r8d, esi\n" // r8 = r - l            
-            "xor rcx, rcx\n"    
+            xor r8, r8
+            mov r8d, edi
+            sub r8d, esi # r8 = r - l            
+            xor rcx, rcx    
 
-            "copy_array_back_start:\n"
+            copy_array_back_start:
 
-            "cmp ecx, r8d\n"
-            "jge copy_array_back_end\n"
-            "mov r10d, esi\n"
-            "add r10d, ecx\n"
-            "mov ebx, DWORD PTR [%1 + r10*4]\n"
-            "mov DWORD PTR [%2 + r10*4], ebx\n"
-            "inc ecx\n"
-            "jmp copy_array_back_start\n"
-            "copy_array_back_end:\n"
+            cmp ecx, r8d
+            jge copy_array_back_end
+            mov r10d, esi
+            add r10d, ecx
+            mov ebx, DWORD PTR [%1 + r10*4]
+            mov DWORD PTR [%2 + r10*4], ebx
+            inc ecx
+            jmp copy_array_back_start
+            copy_array_back_end:
 
-            "merge_cleanup:\n"
+            merge_cleanup:
 
-            // restore rbp and rsp
-            "mov rsp, rbp\n"
-            "pop rbp\n"
+            # restore rbp and rsp
+            mov rsp, rbp
+            pop rbp
 
-            // end merge
-            "ret\n"            
+            # end merge
+            ret            
             
-            "end:\n"
+            end:
+            .att_syntax
+)");
+            //: [returnsize] =r (returnSize)
+            //: [out] r (out), [nums] r (nums), [numSize] r (numsSize)
+            //: rax, rbx, rcx, rdx, rsi, rdi, r8, r9, r10);
 
-            ".att_syntax\n"
-            : [returnsize] "=r" (returnSize)
-            : [out] "r" (out), [nums] "r" (nums), [numSize] "r" (numsSize)
-            : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10");
+            //return nums;
 
-            return nums;
+
+void print_register_value(int value) {
+    puts("At least we made it here");
+
+    printf("Value in rax: %x, value");
+}
+
+void check_vitals(){
+    puts("It's still alive.");
 }
 
 int main(){
@@ -279,18 +293,7 @@ int main(){
     
     int* out = sortArray(nums, numsSize, &returnSize);
     for(int i = 0; i < numsSize; i++){
-        printf("%d, ", nums[i]);
+        printf("%d", nums[i]);
     }
     printf("\n");
-}
-
-
-void print_register_value(int value) {
-    puts("At least we made it here");
-
-    printf("Value in rax: %x\n", value);
-}
-
-void check_vitals(){
-    puts("It's still alive.");
 }
