@@ -7,8 +7,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
     int* out = malloc(numsSize*sizeof(int));
     
     __asm__ volatile(".intel_syntax noprefix\n"
-            "mov eax, %3\n"
-            "mov [%0], eax\n"
+            "mov [%0], %3\n"            
             "xor rcx, rcx\n"
             "xor rsi, rsi\n"
             "xor rdi, rdi\n"
@@ -266,8 +265,8 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "end:\n"
 
             ".att_syntax\n"
-            : "+r" (returnSize)
-            : "r" (out), "r" (nums), "r" (numsSize)
+            : [returnsize] "=r" (returnSize)
+            : [out] "r" (out), [nums] "r" (nums), [numSize] "r" (numsSize)
             : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10");
 
             return nums;
@@ -290,4 +289,8 @@ void print_register_value(int value) {
     puts("At least we made it here");
 
     printf("Value in rax: %x\n", value);
+}
+
+void check_vitals(){
+    puts("It's still alive.");
 }
