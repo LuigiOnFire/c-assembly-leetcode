@@ -1,16 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 /**
  * Note: The returned array must be malloced, assume caller calls free().
  */
 int* sortArray(int* nums, int numsSize, int* returnSize){
     int* out = malloc(numsSize*sizeof(int));
-
     
     __asm__ volatile(".intel_syntax noprefix\n"
+            "mov eax, %2\n"
+            "mov [%3], eax\n"
+            "xor rcx, rcx\n"
+            "xor rsi, rsi\n"
+            "xor rdi, rdi\n"
+            // rax will remain the start of our array
 
-            "jmp init\n"
+            "xor rax, rax\n"
+            "mov rax, %1\n"
+
+            "mov esi, 0\n"
+            "mov edi, %2\n"
+            "push rdi\n"
+            "push rsi\n"
+            "call merge_sort\n" 
+            "pop rsi\n"
+            "pop rdi\n"
+
+            "jmp end\n"
 
             "merge_sort:\n"
             "push rbp\n"
@@ -246,38 +261,21 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
             "pop rbp\n"
 
             // end merge
-            "ret\n"
-            "init:\n"
-
-            "mov eax, %2\n"
-            "mov [%3], eax\n"
-            "xor rcx, rcx\n"
-            "xor rsi, rsi\n"
-            "xor rdi, rdi\n"
-            // rax will remain the start of our array
-
-            "xor rax, rax\n"
-            "mov rax, %1\n"
-
-            "mov esi, 0\n"
-            "mov edi, %2\n"
-            "push rdi\n"
-            "push rsi\n"
-            "call merge_sort\n" 
-            "pop rsi\n"
-            "pop rdi\n"
+            "ret\n"            
             
+            "end:\n"
+
             ".att_syntax\n"
-            : 
-            : "r" (out), "r" (nums), "r" (numsSize), "r" (returnSize)
-            : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10");
+            : "+r" (out)
+            : "rm" (nums), "rm" (numsSize), "rm" (returnSize)
+            : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "cc");
 
             return nums;
 }
 
 int main(){
     int numsSize = 6;
-    int nums[] = {1, 2, 4, 3, 5, 6};
+    int nums[] = {6, 5, 4, 3, 2, 1};
     int returnSize;
     
     int* out = sortArray(nums, numsSize, &returnSize);
@@ -285,4 +283,11 @@ int main(){
         printf("%d, ", nums[i]);
     }
     printf("\n");
+}
+
+
+void print_register_value(int value) {
+    puts("At least we made it here");
+
+    printf("Value in rax: %x\n", value);
 }
