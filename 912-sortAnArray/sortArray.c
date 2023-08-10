@@ -8,20 +8,36 @@ void start_merge(int* nums, int numsSize, int* returnSize, int* out);
 
 int* sortArray(int* nums, int numsSize, int* returnSize){
     int* out = malloc(numsSize*sizeof(int));
+    start_merge(nums, numsSize, returnSize, out);
+    return out;
 }
-    
 
-asm(R"(
+__asm__(R"(
     .intel_syntax noprefix
     start_merge:
-            mov DWORD PTR[edx], esi # numsize into return size
+            mov DWORD PTR[r8], edx # numsize into return size
 
-            # rax will remain the start of our array
-            xor rax, rax
-            mov rax, rdi
+            push rax
+            push rbx
+            push rcx
+            push rdx
+            push rsi
+            push rdi        
+            push r8
+            push r9
+            push r10
+            push r11            
 
+            # rax is already remain the start of our array
+
+
+            # out will be in r11
+            mov r11, r9
+
+            mov rax, rcx
+            mov edi, edx # this moves numsSize into edi
             mov esi, 0
-            mov edi, esi # this moves numsSize into edi
+            
             push rdi
             push rsi
             call merge_sort 
@@ -37,11 +53,11 @@ asm(R"(
             mov edi, DWORD PTR [rbp + 0x18] # this is r
             mov ebx, edi
             sub ebx, esi
-            cmp ebx, 1 // if r - l <= 1
+            cmp ebx, 1 # if r - l <= 1
             jle merge_sort_end
             mov edx, esi
             add edx, edi
-            shr edx, 1 # edx contains m = (l + r) / 2
+            sar edx, 1 # edx contains m = (l + r) / 2
 
             push rdi # this one is not used 
             push rdx # this will be the new r
@@ -83,7 +99,7 @@ asm(R"(
             # get new m
             mov edx, esi
             add edx, edi
-            shr edx, 1 # new m
+            sar edx, 1 # new m
 
             # save size of L = m - l
             xor ebx, ebx
@@ -106,8 +122,8 @@ asm(R"(
             copy_array_start:            
             cmp ecx, r8d
             jg copy_array_end            
-            mov ebx, DWORD PTR [%2 + rcx*4]
-            mov QWORD PTR [%1 + rcx*4], rbx
+            mov ebx, DWORD PTR [rax + rcx*4]
+            mov QWORD PTR [r11 + rcx*4], rbx
             inc ecx
             jmp copy_array_start
             copy_array_end:
@@ -132,17 +148,17 @@ asm(R"(
 
             # Do L if L[i] >= R[j] jump to doing R instead
 
-            mov r8, %2
+            mov r8, rax
             mov r10d, esi
             add r10d, ebx
-            shl r10d, 2
+            sal r10d, 2
             add r8d, r10d
             mov r8d, DWORD PTR[r8] # L[l + i]
 
-            mov r9, %2
+            mov r9, rax
             mov r10d, edx
             add r10d, ecx
-            shl r10d, 2
+            sal r10d, 2
             add r9d, r10d
             mov r9d, DWORD PTR[r9] # R[m + j]
         
@@ -150,11 +166,11 @@ asm(R"(
             jg merge_r
 
             # nums[l + i + j] = L[l + i]
-            mov r9, %1
+            mov r9, r11
             mov r10d, esi
             add r10d, ebx
             add r10d, ecx
-            shl r10d, 2
+            sal r10d, 2
             add r9d, r10d
             mov DWORD PTR[r9], r8d # OUT[l + i + j] = L[l + i]            
 
@@ -167,11 +183,11 @@ asm(R"(
             merge_r:
 
             # nums[l + i + j] = R[m + j]            
-            mov r8, %1
+            mov r8, r11
             mov r10d, esi
             add r10d, ebx
             add r10d, ecx
-            shl r10d, 2
+            sal r10d, 2
             add r8d, r10d
             mov DWORD PTR[r8], r9d # OUT[l + i + j] = R[m + j]
 
@@ -190,18 +206,18 @@ asm(R"(
             jge fill_r
 
             # nums[l + i + j] = L[l + i]            
-            mov r8, %2
+            mov r8, rax
             mov r10d, esi
             add r10d, ebx
-            shl r10d, 2
+            sal r10d, 2
             add r8d, r10d
             mov r8d, DWORD PTR[r8] # L[l + i]
 
-            mov r9, %1
+            mov r9, r11
             mov r10d, esi
             add r10d, ebx
             add r10d, ecx
-            shl r10d, 2
+            sal r10d, 2
             add r9d, r10d
             mov DWORD PTR[r9], r8d # OUT[l + i + j] = L[l + i]
 
@@ -218,18 +234,18 @@ asm(R"(
             jge copy_out_to_in
 
             # nums[l + i + j] = R[m + j]
-            mov r9, %2
+            mov r9, rax
             mov r10d, edx
             add r10d, ecx
-            shl r10d, 2
+            sal r10d, 2
             add r9d, r10d
             mov r9d, DWORD PTR[r9] # R[m + j]
 
-            mov r8, %1
+            mov r8, r11
             mov r10d, esi
             add r10d, ebx
             add r10d, ecx
-            shl r10d, 2
+            sal r10d, 2
             add r8d, r10d
             mov DWORD PTR[r8], r9d # OUT[l + i + j] = R[m + j]
 
@@ -251,8 +267,8 @@ asm(R"(
             jge copy_array_back_end
             mov r10d, esi
             add r10d, ecx
-            mov ebx, DWORD PTR [%1 + r10*4]
-            mov DWORD PTR [%2 + r10*4], ebx
+            mov ebx, DWORD PTR [r11 + r10*4]
+            mov DWORD PTR [rax + r10*4], ebx
             inc ecx
             jmp copy_array_back_start
             copy_array_back_end:
@@ -261,25 +277,38 @@ asm(R"(
 
             # restore rbp and rsp
             mov rsp, rbp
-            pop rbp
+            pop rbp                        
 
             # end merge
             ret            
             
             end:
-            .att_syntax
+
+            mov rdx, rdi# rsi should be numsize
+            mov r8, r11 #the out put array should be in rcx
+
+            pop r11
+            pop r10
+            pop r9
+            pop r8
+            pop rdi
+            pop rsi
+            pop rdx
+            pop rcx            
+            pop rbx       
+            pop rax     
+
+            ret
+
+            .att_syntax prefix
 )");
-            //: [returnsize] =r (returnSize)
-            //: [out] r (out), [nums] r (nums), [numSize] r (numsSize)
-            //: rax, rbx, rcx, rdx, rsi, rdi, r8, r9, r10);
-
-            //return nums;
 
 
-void print_register_value(int value) {
+
+void print_register_value(int val1) {
     puts("At least we made it here");
 
-    printf("Value in rax: %x, value");
+    printf("Value in rdi?: %x,", val1);    
 }
 
 void check_vitals(){
@@ -288,12 +317,12 @@ void check_vitals(){
 
 int main(){
     int numsSize = 6;
-    int nums[] = {6, 5, 4, 3, 2, 1};
-    int returnSize;
+    int nums[] = {-6, 5, 4, 3, 2, 1};
+    int returnSize = 0;
     
     int* out = sortArray(nums, numsSize, &returnSize);
-    for(int i = 0; i < numsSize; i++){
-        printf("%d", nums[i]);
+    for(int i = 0; i < returnSize; i++){
+        printf("%d, ", nums[i]);
     }
     printf("\n");
 }
