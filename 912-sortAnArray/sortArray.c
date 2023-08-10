@@ -263,6 +263,8 @@ __asm__(R"(
 
             copy_array_back_start:
 
+            call print_register_value
+
             cmp ecx, r8d
             jge copy_array_back_end
             mov r10d, esi
