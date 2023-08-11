@@ -174,3 +174,16 @@ void print_register_value(int val1) {
 void check_vitals(){
     puts("It's still alive.");
 }
+
+
+int main(){
+    int numsSize = 6;
+    int nums[] = {-6, 5, 4, 3, 2, 1};
+    int returnSize = 0;
+    
+    int* out = sortArray(nums, numsSize, &returnSize);
+    for(int i = 0; i < returnSize; i++){
+        printf("%d, ", nums[i]);
+    }
+    printf("\n");
+}
