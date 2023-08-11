@@ -7,14 +7,14 @@
 void start_merge(int* nums, int numsSize, int* returnSize, int* out);
 
 int* sortArray(int* nums, int numsSize, int* returnSize){
-    int* out = malloc(numsSize*sizeof(int));
+    int* out = (int*)malloc(numsSize*sizeof(int));
     start_merge(nums, numsSize, returnSize, out);
     return out;
 }
 
+__attribute__ ((naked)) void start_merge(int* nums, int numsSize, int* returnSize, int* out){
 __asm__(R"(
-    .intel_syntax noprefix
-    start_merge:
+    .intel_syntax noprefix    
             mov DWORD PTR[r8], edx # numsize into return size
 
             push rax
@@ -262,8 +262,6 @@ __asm__(R"(
 
             copy_array_back_start:
 
-            # call print_register_value
-
             cmp ecx, r8d
             jge copy_array_back_end
             mov r10d, esi
@@ -303,8 +301,7 @@ __asm__(R"(
 
             .att_syntax prefix
 )");
-
-
+}
 
 void print_register_value(int val1) {
     puts("At least we made it here");
