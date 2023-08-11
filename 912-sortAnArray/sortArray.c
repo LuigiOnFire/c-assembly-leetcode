@@ -29,12 +29,11 @@ __asm__(R"(
             push r11            
 
             # rax is already remain the start of our array
-
+            mov rax, rdi
 
             # out will be in r11
             mov r11, r9
 
-            mov rax, rcx
             mov edi, edx # this moves numsSize into edi
             mov esi, 0
             
@@ -263,7 +262,7 @@ __asm__(R"(
 
             copy_array_back_start:
 
-            call print_register_value
+            # call print_register_value
 
             cmp ecx, r8d
             jge copy_array_back_end
@@ -319,7 +318,7 @@ void check_vitals(){
 
 int main(){
     int numsSize = 6;
-    int nums[] = {-6, 5, 4, 3, 2, 1};
+    int nums[] = {-6, 5, -4, 3, -2, 1};
     int returnSize = 0;
     
     int* out = sortArray(nums, numsSize, &returnSize);
