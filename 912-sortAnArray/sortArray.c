@@ -15,7 +15,7 @@ int* sortArray(int* nums, int numsSize, int* returnSize){
 __attribute__ ((naked)) void start_merge(int* nums, int numsSize, int* returnSize, int* out){
 __asm__(R"(
     .intel_syntax noprefix    
-            mov DWORD PTR[r8], edx # numsize into return size
+            mov DWORD PTR[rcx], esi # numsize into return size
 
             push rax
             push rbx
@@ -31,10 +31,11 @@ __asm__(R"(
             # rax is already remain the start of our array
             mov rax, rdi
 
-            # out will be in r11
-            mov r11, r9
+            # out will be in rcx
+            mov r11, rcx
 
-            mov edi, edx # this moves numsSize into edi
+            # esi has numSize, move into edi
+            mov edi, esi
             mov esi, 0
             
             push rdi
@@ -151,14 +152,14 @@ __asm__(R"(
             mov r10d, esi
             add r10d, ebx
             sal r10d, 2
-            add r8d, r10d
+            add r8, r10
             mov r8d, DWORD PTR[r8] # L[l + i]
 
             mov r9, rax
             mov r10d, edx
             add r10d, ecx
             sal r10d, 2
-            add r9d, r10d
+            add r9, r10
             mov r9d, DWORD PTR[r9] # R[m + j]
         
             cmp r8d, r9d
@@ -170,7 +171,7 @@ __asm__(R"(
             add r10d, ebx
             add r10d, ecx
             sal r10d, 2
-            add r9d, r10d
+            add r9, r10
             mov DWORD PTR[r9], r8d # OUT[l + i + j] = L[l + i]            
 
             # i++
@@ -187,7 +188,7 @@ __asm__(R"(
             add r10d, ebx
             add r10d, ecx
             sal r10d, 2
-            add r8d, r10d
+            add r8, r10
             mov DWORD PTR[r8], r9d # OUT[l + i + j] = R[m + j]
 
             # j++
@@ -209,7 +210,7 @@ __asm__(R"(
             mov r10d, esi
             add r10d, ebx
             sal r10d, 2
-            add r8d, r10d
+            add r8, r10
             mov r8d, DWORD PTR[r8] # L[l + i]
 
             mov r9, r11
@@ -217,7 +218,7 @@ __asm__(R"(
             add r10d, ebx
             add r10d, ecx
             sal r10d, 2
-            add r9d, r10d
+            add r9, r10
             mov DWORD PTR[r9], r8d # OUT[l + i + j] = L[l + i]
 
             inc ebx
@@ -237,7 +238,7 @@ __asm__(R"(
             mov r10d, edx
             add r10d, ecx
             sal r10d, 2
-            add r9d, r10d
+            add r9, r10
             mov r9d, DWORD PTR[r9] # R[m + j]
 
             mov r8, r11
@@ -245,7 +246,7 @@ __asm__(R"(
             add r10d, ebx
             add r10d, ecx
             sal r10d, 2
-            add r8d, r10d
+            add r8, r10
             mov DWORD PTR[r8], r9d # OUT[l + i + j] = R[m + j]
 
             inc ecx
@@ -314,8 +315,8 @@ void check_vitals(){
 }
 
 int main(){
-    int numsSize = 6;
-    int nums[] = {-6, 5, -4, 3, -2, 1};
+    int numsSize = 2;
+    int nums[] = {1, -2};
     int returnSize = 0;
     
     int* out = sortArray(nums, numsSize, &returnSize);
