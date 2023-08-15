@@ -1,39 +1,45 @@
 #include <stdio.h>
 #include <stdlib.h>
-void start_merge(int* nums, int numsSize, int* returnSize, int* out);
 
-int* sortArray(int* nums, int numsSize, int* returnSize){
-    int* out = (int*)malloc(numsSize*sizeof(int));
-    start_merge(nums, numsSize, returnSize, out);
-    return nums;
-}
+// int* sortArray(int* nums, int numsSize, int* returnSize){
+//     int* out = (int*)malloc(numsSize*sizeof(int));
+//     start_merge(nums, numsSize, returnSize, out);
+//     return nums;
+// }
 
-__attribute__ ((naked)) void start_merge(int* nums, int numsSize, int* returnSize, int* out){
+__attribute__ ((naked)) int* sortArray(int* nums, int numsSize, int* returnSize){
 __asm__(R"(
     .intel_syntax noprefix    
             mov DWORD PTR[rdx], esi # numsize into return size
 
-            push rax
             push rbx
             push rcx
             push rdx
             push rsi
-            push rdi        
+            push rdi
             push r8
             push r9
             push r10
-            push r11            
+            push r11
 
-            # move rdi into rax
-            mov rax, rdi
+            # use rbx as temporary register to hold nums
+            mov rbx, rdi
 
-            # out will be in rcx, move into r11
-            mov r11, rcx
-
-            # esi has numSize, move into edi
+            # make a new malloc call to get out array
+            # then put that array in r11
+            push rsi
             mov edi, esi
+            sal rdi, 2 # multiplies by 4, which is size of int
+            call malloc
+            pop rsi
+            lea r11, [rax]
+
+            mov rdi, rsi
             mov esi, 0
-            
+
+            # move nums back into rax
+            mov rax, rbx
+
             push rdi
             push rsi
             call merge_sort 
@@ -280,6 +286,7 @@ __asm__(R"(
             
             end:
 
+            # at the end rax is nums, which is what we want to return anyway
             pop r11
             pop r10
             pop r9
@@ -289,7 +296,6 @@ __asm__(R"(
             pop rdx
             pop rcx            
             pop rbx       
-            pop rax     
 
             ret
 
