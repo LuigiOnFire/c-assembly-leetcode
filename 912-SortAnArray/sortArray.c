@@ -1,15 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-/**
- * Note: The returned array must be malloced, assume caller calls free().
- */
-
 void start_merge(int* nums, int numsSize, int* returnSize, int* out);
 
 int* sortArray(int* nums, int numsSize, int* returnSize){
     int* out = (int*)malloc(numsSize*sizeof(int));
     start_merge(nums, numsSize, returnSize, out);
-    return out;
+    return nums;
 }
 
 __attribute__ ((naked)) void start_merge(int* nums, int numsSize, int* returnSize, int* out){
@@ -28,10 +24,10 @@ __asm__(R"(
             push r10
             push r11            
 
-            # rax is already remain the start of our array
+            # move rdi into rax
             mov rax, rdi
 
-            # out will be in rcx
+            # out will be in rcx, move into r11
             mov r11, rcx
 
             # esi has numSize, move into edi
@@ -299,16 +295,6 @@ __asm__(R"(
 
             .att_syntax prefix
 )");
-}
-
-void print_register_value(int val1) {
-    puts("At least we made it here");
-
-    printf("Value in rdi?: %x,", val1);    
-}
-
-void check_vitals(){
-    puts("It's still alive.");
 }
 
 int main(){
