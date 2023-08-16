@@ -12,10 +12,12 @@ __asm__(R"(
 
             # malloc our tiny new return array
             push rdi
+            push rcx # rcx is caller saved
             xor rdi, rdi
             sal edx, 2
             mov edi, edx
             call malloc # just leave our return array in rax
+            pop rcx
             pop rdi
 
             # sort the input array
@@ -23,6 +25,7 @@ __asm__(R"(
             # rax and rdx are going to get clobbered
             push rax
             push rdx
+            mov rdx, rcx # we don't need this because we know our array size, but we need it to be something safe, like a real pointer
             call sort_array
             pop rdx
             pop rax            
@@ -46,12 +49,12 @@ __asm__(R"(
             push r11
 
             # use rbx as temporary register to hold nums
-            mov rbx, rdi
+            lea rbx, [rdi]
 
             # make a new malloc call to get out array
             # then put that array in r11
             push rsi
-            mov edi, esi
+            lea rdi, [rsi]
             sal rdi, 2 # multiplies by 4, which is size of int
             call malloc
             pop rsi
@@ -328,10 +331,11 @@ __asm__(R"(
 
 int main(){
     int numsSize = 2;
-    int nums[] = {1, -2};
-    int returnSize = 0;
+    int nums[] = {1, 1, 0};
+    int target = 2;
+    int returnSize;
     
-    int* out = sortArray(nums, numsSize, &returnSize);
+    int* out = twoSum(nums, numsSize, target, &returnSize);
     for(int i = 0; i < returnSize; i++){
         printf("%d, ", nums[i]);
     }
