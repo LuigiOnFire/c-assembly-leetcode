@@ -22,7 +22,7 @@ __asm__(R"(
 
             # sort the input array
             # rdi and rsi get to remain the same
-            # rax and rdx are going to get clobbered
+            # rax and rdx are going to get clobbere
             push rax
             push rdx
             mov rdx, rcx # we don't need this because we know our array size, but we need it to be something safe, like a real pointer
