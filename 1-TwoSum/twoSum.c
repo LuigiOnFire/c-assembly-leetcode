@@ -8,15 +8,17 @@ __asm__(R"(
             # rdi has nums
             # esi has numSize
             # edx has target
-            # ecx has returnSize
+            # ecx has returnSize            
 
             # malloc our tiny new return array
             push rdi
             push rcx # rcx is caller saved
+            push rsi # rsi is caller saved
             xor rdi, rdi
             sal edx, 2
             mov edi, edx
             call malloc # just leave our return array in rax
+            pop rsi
             pop rcx
             pop rdi
 
@@ -31,8 +33,48 @@ __asm__(R"(
             pop rax            
 
             # set up our two iterators
+            mov rbx, 0
+            mov rcx, rsi
 
             # start looping
+            cmp_loop:
+
+            # make the sum, compare
+            mov r8, rdi
+            add r8, rbx
+            mov r8d, DWORD PTR [r8]
+
+            mov r9, rdi
+            add r9, rcx
+            mov r9d, DWORD PTR [r9]
+
+            mov r10, r8
+            add r10, r9
+
+            cmp r10, rdx
+
+            # if it's even we're done
+            je found_match
+
+            # if it's too small, increment the left iterator's register
+            jl too_small
+
+            # if it's too big, increment the right iterator's register
+            jg too_big
+
+            too_small:
+            inc rbx
+            jmp cmp_loop
+
+            too_big:
+            dec rcx
+            jmp cmp_loop
+
+            found_match:
+            mov DWORD PTR [rax], ebx
+            mov DWORD PTR [rax + 4], ecx
+
+            ret
 
             sort_array:
             # int* sortArray(int* nums, int numsSize, int* returnSize)
@@ -330,7 +372,7 @@ __asm__(R"(
 }
 
 int main(){
-    int numsSize = 2;
+    int numsSize = 3;
     int nums[] = {1, 1, 0};
     int target = 2;
     int returnSize;
