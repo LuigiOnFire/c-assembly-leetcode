@@ -8,45 +8,81 @@ __asm__(R"(
             # rdi has nums
             # esi has numSize
             # edx has target
-            # ecx has returnSize            
+            # ecx has returnSize
+
+            # malloc a copy of our array to sort
+            push rdi
+            push rcx # rcx is caller saved
+            push rdx
+            push rsi # rsi is caller saved
+            xor rdi, rdi
+            mov edi, esi
+            sal edi, 2
+            call malloc # just leave our return array in rax
+            pop rsi
+            pop rdx
+            pop rcx
+            pop rdi
+
+            mov r11, rax # we'll use r11 to keep the sorted version
 
             # malloc our tiny new return array
             push rdi
             push rcx # rcx is caller saved
+            push rdx
             push rsi # rsi is caller saved
+            push r11
             xor rdi, rdi
             sal edx, 2
             mov edi, edx
             call malloc # just leave our return array in rax
+            pop r11
             pop rsi
+            pop rdx
             pop rcx
             pop rdi
+
+            push rcx
+            # copy our array NOT DONE            
+            xor rcx, rcx
+
+            make_array_copy_start:
+
+            cmp ecx, esi
+            jge make_array_copy
+            mov ebx, DWORD PTR [rdi + 4*rcx]
+            mov DWORD PTR [r11 + 4*rcx], ebx
+            inc ecx
+            jmp make_array_copy_start
+            make_array_copy:
+            pop rcx
+
 
             # sort the input array
             # rdi and rsi get to remain the same
             # rax and rdx are going to get clobbere
             push rax
             push rdx
+            push rdi # we're going to use r11 for the sorted versoin
+            mov rdi, r11
             mov rdx, rcx # we don't need this because we know our array size, but we need it to be something safe, like a real pointer
             call sort_array
+            mov r11, rdi
+            pop rdi
             pop rdx
             pop rax            
 
             # set up our two iterators
             mov rbx, 0
             mov rcx, rsi
+            dec rcx
 
             # start looping
             cmp_loop:
 
             # make the sum, compare
-            mov r8, rdi
-            add r8, rbx
-            mov r8d, DWORD PTR [r8]
-
-            mov r9, rdi
-            add r9, rcx
-            mov r9d, DWORD PTR [r9]
+            mov r8d, DWORD PTR [r11+4*rbx]
+            mov r9d, DWORD PTR [r11+4*rcx]
 
             mov r10, r8
             add r10, r9
@@ -71,9 +107,14 @@ __asm__(R"(
             jmp cmp_loop
 
             found_match:
-            mov DWORD PTR [rax], ebx
-            mov DWORD PTR [rax + 4], ecx
+            mov DWORD PTR [rax], r8d
+            mov DWORD PTR [rax + 4], r9d
 
+            # iterate th
+            # rcx is now our new index
+            mov rcx, 0 
+
+            mov rcx, rsi
             ret
 
             sort_array:
@@ -379,7 +420,7 @@ int main(){
     
     int* out = twoSum(nums, numsSize, target, &returnSize);
     for(int i = 0; i < returnSize; i++){
-        printf("%d, ", nums[i]);
+        printf("%d, ", out[i]);
     }
     printf("\n");
 }
