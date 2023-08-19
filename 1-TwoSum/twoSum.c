@@ -10,6 +10,8 @@ __asm__(R"(
             # edx has target
             # ecx has returnSize
 
+            push rbx
+            push rcx # we don't needs this but we'll want it at the end
             # malloc a copy of our array to sort
             push rdi
             push rcx # rcx is caller saved
@@ -56,7 +58,6 @@ __asm__(R"(
             jmp make_array_copy_start
             make_array_copy:
             pop rcx
-
 
             # sort the input array
             # rdi and rsi get to remain the same
@@ -115,8 +116,41 @@ __asm__(R"(
             mov rcx, 0 
             mov rbx, 0 # rbx will set our flags
 
-            check_for_index:
+            check_first_index:
+            cmp ecx, esi
+            jge find_index_done
 
+            test rbx, 2            
+            jnz check_second_index
+
+            cmp r8d, DWORD PTR [rdi + 4*rcx]
+            jne prepare_next_iterate
+
+            or rbx, 2 # fill the more significant bit
+            mov DWORD PTR[rax], ecx
+            jmp prepare_next_iterate
+
+            check_second_index:
+            test rbx, 1
+            jnz prepare_next_iterate
+
+            cmp r9d, DWORD PTR [rdi + 4*rcx]
+            jne prepare_next_iterate
+
+            or rbx, 1 # fill the least significant bit
+            mov DWORD PTR[rax + 4], ecx            
+
+            prepare_next_iterate:
+
+            inc rcx
+            jmp check_first_index
+
+            find_index_done:
+            
+            pop rcx
+            mov DWORD PTR [rcx], 2
+
+            pop rbx
 
             ret
 
@@ -416,9 +450,9 @@ __asm__(R"(
 }
 
 int main(){
-    int numsSize = 3;
-    int nums[] = {1, 1, 0};
-    int target = 2;
+    int numsSize = 6;
+    int nums[] = {1, 0, 0, 0, 0, 2};
+    int target = 3;
     int returnSize;
     
     int* out = twoSum(nums, numsSize, target, &returnSize);
@@ -426,4 +460,5 @@ int main(){
         printf("%d, ", out[i]);
     }
     printf("\n");
+    return 0;
 }
