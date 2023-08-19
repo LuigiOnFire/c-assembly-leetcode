@@ -110,11 +110,14 @@ __asm__(R"(
             mov DWORD PTR [rax], r8d
             mov DWORD PTR [rax + 4], r9d
 
-            # iterate th
+            # iterate through
             # rcx is now our new index
             mov rcx, 0 
+            mov rbx, 0 # rbx will set our flags
 
-            mov rcx, rsi
+            check_for_index:
+
+
             ret
 
             sort_array:
