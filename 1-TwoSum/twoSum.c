@@ -34,9 +34,8 @@ __asm__(R"(
             push rdx
             push rsi # rsi is caller saved
             push r11
-            xor rdi, rdi
-            sal edx, 2
-            mov edi, edx
+            xor rdi, rdi            
+            mov edi, 8
             call malloc # just leave our return array in rax
             pop r11
             pop rsi
@@ -85,8 +84,8 @@ __asm__(R"(
             mov r8d, DWORD PTR [r11+4*rbx]
             mov r9d, DWORD PTR [r11+4*rcx]
 
-            mov r10, r8
-            add r10, r9
+            mov r10d, r8d
+            add r10d, r9d
 
             cmp r10, rdx
 
@@ -124,7 +123,7 @@ __asm__(R"(
             jnz check_second_index
 
             cmp r8d, DWORD PTR [rdi + 4*rcx]
-            jne prepare_next_iterate
+            jne check_second_index
 
             or rbx, 2 # fill the more significant bit
             mov DWORD PTR[rax], ecx
@@ -450,9 +449,9 @@ __asm__(R"(
 }
 
 int main(){
-    int numsSize = 6;
-    int nums[] = {1, 0, 0, 0, 0, 2};
-    int target = 3;
+    int numsSize = 2;
+    int nums[] = {1000000, 0, -1000000};
+    int target = 0;
     int returnSize;
     
     int* out = twoSum(nums, numsSize, target, &returnSize);
