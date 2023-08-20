@@ -87,7 +87,7 @@ __asm__(R"(
             mov r10d, r8d
             add r10d, r9d
 
-            cmp r10, rdx
+            cmp r10d, edx
 
             # if it's even we're done
             je found_match
@@ -449,9 +449,9 @@ __asm__(R"(
 }
 
 int main(){
-    int numsSize = 2;
-    int nums[] = {1000000, 0, -1000000};
-    int target = 0;
+    int numsSize = 5;
+    int nums[] = {0,3,-3,4,-1};
+    int target = -1;
     int returnSize;
     
     int* out = twoSum(nums, numsSize, target, &returnSize);
