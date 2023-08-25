@@ -13,20 +13,33 @@ __asm__(R"(
             push rdi
             push rsi       
 
+            # handle the trivial cases
+            cmp rdi, 0
+            jne first_not_null
+            mov rax, rsi
+            jmp done
+
+            first_not_null:
+            cmp rsi, 0
+            jne second_not_null
+            mov rax, rdi
+            jmp done
+
+            second_not_null:
+
             # find which one is smaller so we can put that (and leave it) in rax            
             mov ebx, DWORD PTR[rdi]
             mov ecx, DWORD PTR[rsi]
             
             cmp ebx, ecx
             jl second_is_bigger
-            mov rax, rdi
-            mov rdi, QWORD PTR[rdi + 8]
-
+            mov rax, rsi
+            mov rsi, QWORD PTR[rsi + 8]
             jmp found_larger
 
             second_is_bigger:
-            mov rax, rsi
-            mov rsi, QWORD PTR[rsi + 8]
+            mov rax, rdi
+            mov rdi, QWORD PTR[rdi + 8]
 
             found_larger:
             mov rbx, rax #rbx will hold the previous head
